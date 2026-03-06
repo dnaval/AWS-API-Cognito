@@ -20,6 +20,7 @@ Design and implement an AWS API Gateway that uses Cognito for authentication and
 
 * Set an IAM User
   If you are using VSCode you can install "AWS toolkit" extension. You can generate an Access key with the IAM user and connect to your AWS from VSCode.
+
   ![IAM User Setup](https://github.com/dnaval/AWS-API-Cognito/blob/main/assets/IAM_User_Config.png)
 
 * Install AWS CLI
@@ -27,22 +28,31 @@ Design and implement an AWS API Gateway that uses Cognito for authentication and
 
 * Create a User Pool (Amazon Cognito)
   Amazon Cognito user pool is a user directory for web and mobile app authentication and authorization.
+
   User Pool setup:
+
   ![User Pool](https://github.com/dnaval/AWS-API-Cognito/blob/main/assets/AWS_Cognito_User_Pools.png)
+
   App client setup:
+
   ![App Client](https://github.com/dnaval/AWS-API-Cognito/blob/main/assets/UserPool_AppClient.png)
 
 * Create a bucket (Amazon S3)
   You can create a bucket in the S3 service in AWS. This bucket will be used to upload the Lambda function code.
+
   ![S3 Bucket](https://github.com/dnaval/AWS-API-Cognito/blob/main/assets/S3_Bucket.png)
 
 * Upload Lambdas function file (zip)
-  In VSCode
+  In VSCode:
+
   ![Lambdas Zip Files](https://github.com/dnaval/AWS-API-Cognito/blob/main/assets/lambdas_zip_files.png)
-  In AWS
+
+  In AWS:
+
   ![Bucket Lambdas Files](https://github.com/dnaval/AWS-API-Cognito/blob/main/assets/Bucket_Lambda_AWS.png)
 
 * Update the parameters in main.yaml
+  ```
   Parameters:
     StageName:
       Type: String
@@ -60,6 +70,7 @@ Design and implement an AWS API Gateway that uses Cognito for authentication and
       Type: String
       NoEcho: true
       Default: OPENWEATHER_API_KEY
+  ```
 
 * Deploy Stack
   To create the stack (remeber to add the OPENWEATHER_API_KEY) :
