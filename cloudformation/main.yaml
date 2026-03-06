@@ -1,0 +1,168 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: API Gateway with Cognito Authentication and Two Lambdas
+
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+
+  UserPoolId:
+    Type: String
+    Default: us-east-1_yizYGLfdu
+
+  CognitoClientId:
+    Type: String
+    Default: pdrck2rmiq4oilgkq5rghipo1
+
+  OpenWeatherApiKey:
+    Type: String
+    NoEcho: true
+    Default: "cf050868a1b6b910d96a05fe18411d55"
+
+Resources:
+
+############################
+# IAM Role
+############################
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+############################
+# Lambda Functions
+############################
+
+  Lambda1:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: dnavaldev-api-assessment-bucket
+        S3Key: lambda1.zip
+      Timeout: 10
+
+  Lambda2:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.11
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: dnavaldev-api-assessment-bucket
+        S3Key: lambda2.zip
+      Environment:
+        Variables:
+          OPENWEATHER_API_KEY: !Ref OpenWeatherApiKey
+      Timeout: 10
+
+############################
+# API Gateway HTTP API
+############################
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: dnavaldevAssessmentApi
+      ProtocolType: HTTP
+
+  JwtAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      Name: JwtAuthorizer
+      ApiId: !Ref HttpApi
+      AuthorizerType: JWT
+      IdentitySource:
+        - "$request.header.Authorization"
+      JwtConfiguration:
+        Audience:
+          - !Ref CognitoClientId
+        Issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
+
+############################
+# Integrations
+############################
+
+  Lambda1Integration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt Lambda1.Arn
+      PayloadFormatVersion: "2.0"
+
+  Lambda2Integration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt Lambda2.Arn
+      PayloadFormatVersion: "2.0"
+
+############################
+# Routes
+############################
+
+  Route1:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /age"
+      Target: !Join ["/", ["integrations", !Ref Lambda1Integration]]
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+
+  Route2:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /weather"
+      Target: !Join ["/", ["integrations", !Ref Lambda2Integration]]
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: !Ref StageName
+      AutoDeploy: true
+
+############################
+# Permissions
+############################
+
+  Permission1:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Lambda1
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/GET/age
+
+  Permission2:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Lambda2
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/GET/weather
+
+Outputs:
+  ApiUrl:
+    Value: !Join ["", ["https://", !Ref HttpApi, ".execute-api.", !Ref "AWS::Region", ".amazonaws.com/", !Ref StageName]]
+  UserPoolId:
+    Value: !Ref UserPoolId
+  ClientId:
+    Value: !Ref CognitoClientId
