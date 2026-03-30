@@ -1,6 +1,6 @@
 # AWS API Gateway with Cognito Authentication
 
-Design and implement an AWS API Gateway that uses Cognito for authentication and connects to two Lambda functions. Each Lambda function will call an external service of the candidate's choice. The candidate must use CloudFormation scripts to provide the necessary infrastructure and clear documentation.
+Design and implement an AWS API Gateway that uses Cognito for authentication and connects to two Lambda functions. Each Lambda function will call an external service of the candidate's choice. We must use CloudFormation scripts to provide the necessary infrastructure and clear documentation.
 
 ## Description
 
@@ -128,14 +128,6 @@ Design and implement an AWS API Gateway that uses Cognito for authentication and
     -d "grant_type=authorization_code&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL/"
     ```
     Replace CLIENT_ID, CLIENT_SECRET, AUTHORIZATION_CODE and CALLBACK_URL with your values.
-    
-    For test purposes:
-    ```bash
-    curl -X POST https://us-east-1yizyglfdu.auth.us-east-1.amazoncognito.com/oauth2/token \
-    -u pdrck2rmiq4oilgkq5rghipo1:rfuim92u4gfqe4d43u2m094e2k147k0gl2912u8301at3o1dj2t \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "grant_type=authorization_code&code=AUTHORIZATION_CODE&redirect_uri=https://dnavaldev.com/"
-    ```
 
     Example response:
     ```bash
@@ -166,5 +158,4 @@ Design and implement an AWS API Gateway that uses Cognito for authentication and
 
 ### Authors
 
-ScanSource Canada Assessment
-Candidat: Daniel Naval
+Daniel Naval
