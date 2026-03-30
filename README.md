@@ -1,6 +1,6 @@
 # AWS API Gateway with Cognito Authentication
 
-Design and implement an AWS API Gateway that uses Cognito for authentication and connects to two Lambda functions. Each Lambda function will call an external service of the candidate's choice. We must use CloudFormation scripts to provide the necessary infrastructure and clear documentation.
+Design and implement an AWS API Gateway that uses Cognito for authentication and connects to two Lambda functions. Each Lambda function will call an external service of choice. We must use CloudFormation scripts to provide the necessary infrastructure and clear documentation.
 
 ## Description
 
